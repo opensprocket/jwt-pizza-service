@@ -31,6 +31,49 @@ module.exports =  {
 };
 ```
 
+You will also need to create and populate a `.env` file in order to use the included `docker-compose.yml` stack (which runs the MySQL server). Put the root password that you want to use in the container into the .env file. 
+
+```
+MYSQL_ROOT_PASSWORD=your_root_password_here
+```
+Double check to make sure that `.env` files have been added to the `.gitignore` file.
+
+Create a `docker-compose.yml` file with the following contents (you may want to check and make sure that you are on the latest LTS version of MySQL): 
+
+```
+services:
+  db:
+    image: mysql:8.4.7
+    container_name: mysql-db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:
+  
+```
+
+Start the docker stack by making sure docker is installed and/or running (as appropriate for your system) and then running the following from a terminal session in the root directory of the project:
+
+```
+docker compose up -d
+```
+
+To stop the docker stack run the following (also from the root directory of the project):
+
+```
+docker compose down
+```
+
+
+
+
+
 ## Endpoints
 
 You can get the documentation for all endpoints by making the following request.
