@@ -471,5 +471,19 @@ describe('DELETE /api/franchise/:franchiseId/store/:storeId - Delete store', () 
     expect(res.body.message).toBe('store deleted');
   });
 
+  test('should handle delete request for non-existent franchise', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping test - admin role not available');
+      return;
+    }
+
+    const res = await request(app)
+      .delete('/api/franchise/99999/store/1')
+      .set('Authorization', `Bearer ${testUserToken}`);
+
+    // The API may return 200 (successful deletion) or 403 (forbidden) 
+    // depending on implementation
+    expect([200, 403, 404]).toContain(res.status);
+  });
 });
 });
