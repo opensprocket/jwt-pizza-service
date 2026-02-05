@@ -8,7 +8,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
-      - db-data:/var/lib/mysql
+      - pizza-db-data:/var/lib/mysql
 
 volumes:
-  db-data:
+  pizza-db-data:
