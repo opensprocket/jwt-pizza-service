@@ -237,4 +237,56 @@ describe('POST /api/franchise - Create franchise', () => {
     expect(res.body.admins.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe('DELETE /api/franchise/:franchiseId - Delete franchise', () => {
+  let franchiseToDelete;
+
+  beforeEach(async () => {
+    if (!isAdminAvailable) {
+      return;
+    }
+
+    // Create a franchise to delete
+    const newFranchise = {
+      name: 'Temp Franchise ' + Math.random().toString(36).substring(2, 8),
+      admins: [{ email: franchiseeUser.email }],
+    };
+
+    const createRes = await request(app)
+      .post('/api/franchise')
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(newFranchise);
+
+    franchiseToDelete = createRes.body.id;
+  });
+
+  test('should delete franchise successfully', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping admin test - admin role not available');
+      return;
+    }
+
+    const res = await request(app)
+      .delete(`/api/franchise/${franchiseToDelete}`)
+      .set('Authorization', `Bearer ${testUserToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('franchise deleted');
+  });
+
+  test('should handle deleting non-existent franchise', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping admin test - admin role not available');
+      return;
+    }
+
+    const res = await request(app)
+      .delete('/api/franchise/99999')
+      .set('Authorization', `Bearer ${testUserToken}`);
+
+    // Should either succeed or return appropriate error
+    expect([200, 404]).toContain(res.status);
+  });
+});
+
 });
