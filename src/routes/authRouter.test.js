@@ -170,6 +170,20 @@ describe('DELETE /api/auth - Logout', () => {
     expect(logoutRes.body.message).toBe('unauthorized');
   });
 
+  test('should verify token is invalidated after logout', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+    const token = loginRes.body.token;
+
+    await request(app)
+      .delete('/api/auth')
+      .set('Authorization', `Bearer ${token}`);
+
+    const isLoggedIn = await DB.isLoggedIn(token);
+    expect(isLoggedIn).toBe(false);
+  });
 });
 });
 });
