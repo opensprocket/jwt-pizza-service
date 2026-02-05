@@ -206,5 +206,22 @@ describe('Authentication Middleware', () => {
     expect(protectedRes.status).toBe(401);
   });
 
+  test('should handle expired or logged out tokens', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+    const token = loginRes.body.token;
+
+    await request(app)
+      .delete('/api/auth')
+      .set('Authorization', `Bearer ${token}`);
+
+    const retryRes = await request(app)
+      .delete('/api/auth')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(retryRes.status).toBe(401);
+  });
 });
 });
