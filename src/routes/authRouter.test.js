@@ -249,4 +249,20 @@ describe('Edge Cases', () => {
     expect(res.body.user.name).toBe(specialUser.name);
   });
 
+  test('should handle multiple simultaneous logins for same user', async () => {
+    const login1 = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    const login2 = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    expect(login1.status).toBe(200);
+    expect(login2.status).toBe(200);
+    expect(login1.body.token).toBeDefined();
+    expect(login2.body.token).toBeDefined();
+  });
 });
