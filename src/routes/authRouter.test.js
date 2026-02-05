@@ -78,4 +78,24 @@ describe('POST /api/auth - Register', () => {
   });
 });
 
+describe('PUT /api/auth - Login', () => {
+  test('should login existing user successfully', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.token).toBeDefined();
+    expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+
+    expect(loginRes.body.user).toMatchObject({
+      name: testUser.name,
+      email: testUser.email,
+      roles: [{ role: 'diner' }],
+    });
+    expect(loginRes.body.user.password).toBeUndefined();
+  });
+
+});
 });
