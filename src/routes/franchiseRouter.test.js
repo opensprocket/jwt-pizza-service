@@ -173,5 +173,20 @@ describe('POST /api/franchise - Create franchise', () => {
     expect(res.body.message).toBe('unauthorized');
   });
 
+  test('should return 403 when non-admin user tries to create franchise', async () => {
+    const newFranchise = {
+      name: 'New Pizza Franchise',
+      admins: [{ email: franchiseeUser.email }],
+    };
+
+    const res = await request(app)
+      .post('/api/franchise')
+      .set('Authorization', `Bearer ${regularToken}`)
+      .send(newFranchise);
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toBe('unable to create a franchise');
+  });
+
 });
 });
