@@ -359,6 +359,22 @@ describe('POST /api/franchise/:franchiseId/store - Create store', () => {
     expect(res.body.name).toBe(newStore.name);
   });
 
+  test('should return error for non-existent franchise', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping admin test - admin role not available');
+      return;
+    }
+
+    const newStore = { name: 'Store in Nowhere' };
+
+    const res = await request(app)
+      .post('/api/franchise/99999/store')
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(newStore);
+
+    // Should return 403 (forbidden) or 500 (server error for non-existent franchise)
+    expect(res.status).toBeGreaterThanOrEqual(400);
+  });
 });
 });
 });
