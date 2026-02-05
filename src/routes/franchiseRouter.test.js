@@ -71,3 +71,14 @@ afterAll(async () => {
   }
 });
 
+describe('GET /api/franchise - List franchises', () => {
+  test('should list all franchises without authentication', async () => {
+    const res = await request(app).get('/api/franchise');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('franchises');
+    expect(res.body).toHaveProperty('more');
+    expect(Array.isArray(res.body.franchises)).toBe(true);
+  });
+
+});
