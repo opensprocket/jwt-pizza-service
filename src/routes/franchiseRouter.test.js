@@ -376,5 +376,51 @@ describe('POST /api/franchise/:franchiseId/store - Create store', () => {
     expect(res.status).toBeGreaterThanOrEqual(400);
   });
 });
+
+describe('DELETE /api/franchise/:franchiseId/store/:storeId - Delete store', () => {
+  let testStore;
+  let testStoreFranchiseId;
+
+  beforeEach(async () => {
+    if (!isAdminAvailable) {
+      return;
+    }
+
+    // Create a franchise and store to delete
+    const franchise = {
+      name: 'Store Delete Test ' + Math.random().toString(36).substring(2, 8),
+      admins: [{ email: franchiseeUser.email }],
+    };
+
+    const franchiseRes = await request(app)
+      .post('/api/franchise')
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(franchise);
+
+    testStoreFranchiseId = franchiseRes.body.id;
+
+    const store = { name: 'Store to Delete' };
+    const storeRes = await request(app)
+      .post(`/api/franchise/${testStoreFranchiseId}/store`)
+      .set('Authorization', `Bearer ${franchiseeToken}`)
+      .send(store);
+
+    testStore = storeRes.body.id;
+  });
+
+  test('should return 401 when not authenticated', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping test - admin role not available');
+      return;
+    }
+
+    const res = await request(app).delete(
+      `/api/franchise/${testStoreFranchiseId}/store/${testStore}`
+    );
+
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('unauthorized');
+  });
+
 });
 });
