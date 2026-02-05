@@ -223,4 +223,16 @@ describe('POST /api/order - Create order', () => {
     expect(res.body).toHaveProperty('followLinkToEndChaos', factoryError.reportUrl);
   });
 
+  test('should fail if payload is invalid (missing required fields)', async () => {
+    // Assuming DB validation throws error for missing fields
+    const invalidPayload = { items: [] };
+
+    const res = await request(app)
+      .post('/api/order')
+      .set('Authorization', `Bearer ${dinerToken}`)
+      .send(invalidPayload);
+
+    // Depending on DB implementation, this might be 500 or 400
+    expect(res.status).not.toBe(200);
+  });
 });
