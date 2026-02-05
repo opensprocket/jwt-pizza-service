@@ -81,4 +81,12 @@ describe('GET /api/franchise - List franchises', () => {
     expect(Array.isArray(res.body.franchises)).toBe(true);
   });
 
+  test('should support pagination with page parameter', async () => {
+    const res = await request(app).get('/api/franchise?page=0&limit=5');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('franchises');
+    expect(res.body).toHaveProperty('more');
+  });
+
 });
