@@ -129,5 +129,22 @@ describe('PUT /api/auth - Login', () => {
   });
 });
 
+describe('DELETE /api/auth - Logout', () => {
+  test('should logout authenticated user successfully', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+    const token = loginRes.body.token;
+
+    const logoutRes = await request(app)
+      .delete('/api/auth')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(logoutRes.status).toBe(200);
+    expect(logoutRes.body.message).toBe('logout successful');
+  });
+
+});
 });
 });
