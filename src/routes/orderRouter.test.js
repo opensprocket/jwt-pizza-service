@@ -118,3 +118,30 @@ describe('PUT /api/order/menu - Add menu item', () => {
     expect(addedItem.price).toBe(newMenuItem.price);
   });
 });
+
+describe('GET /api/order - Get user orders', () => {
+  test('should return 401 when not authenticated', async () => {
+    const res = await request(app).get('/api/order');
+    expect(res.status).toBe(401);
+  });
+
+  test('should return orders for authenticated user', async () => {
+    const res = await request(app)
+      .get('/api/order')
+      .set('Authorization', `Bearer ${dinerToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('dinerId', dinerUser.id);
+    expect(res.body).toHaveProperty('orders');
+    expect(Array.isArray(res.body.orders)).toBe(true);
+  });
+
+  test('should support pagination', async () => {
+    const res = await request(app)
+      .get('/api/order?page=1')
+      .set('Authorization', `Bearer ${dinerToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('orders');
+  });
+});
