@@ -109,4 +109,13 @@ describe('GET /api/franchise - List franchises', () => {
     }
   });
 });
+
+describe('GET /api/franchise/:userId - List user franchises', () => {
+  test('should return 401 when not authenticated', async () => {
+    const res = await request(app).get(`/api/franchise/${franchiseeUserId}`);
+
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('unauthorized');
+  });
+});
 });
