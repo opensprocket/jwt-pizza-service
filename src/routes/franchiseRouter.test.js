@@ -159,4 +159,19 @@ describe('GET /api/franchise/:userId - List user franchises', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 });
+
+describe('POST /api/franchise - Create franchise', () => {
+  test('should return 401 when not authenticated', async () => {
+    const newFranchise = {
+      name: 'New Pizza Franchise',
+      admins: [{ email: franchiseeUser.email }],
+    };
+
+    const res = await request(app).post('/api/franchise').send(newFranchise);
+
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('unauthorized');
+  });
+
+});
 });
