@@ -145,6 +145,13 @@ describe('DELETE /api/auth - Logout', () => {
     expect(logoutRes.body.message).toBe('logout successful');
   });
 
+  test('should return 401 when no token is provided', async () => {
+    const logoutRes = await request(app).delete('/api/auth');
+
+    expect(logoutRes.status).toBe(401);
+    expect(logoutRes.body.message).toBe('unauthorized');
+  });
+
 });
 });
 });
