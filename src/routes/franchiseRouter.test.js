@@ -289,5 +289,40 @@ describe('DELETE /api/franchise/:franchiseId - Delete franchise', () => {
   });
 });
 
+describe('POST /api/franchise/:franchiseId/store - Create store', () => {
+  test('should return 401 when not authenticated', async () => {
+    if (!testFranchiseId) {
+      console.log('Skipping test - no test franchise available');
+      return;
+    }
+
+    const newStore = { name: 'New Store' };
+
+    const res = await request(app)
+      .post(`/api/franchise/${testFranchiseId}/store`)
+      .send(newStore);
+
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('unauthorized');
+  });
+
+  test('should return 403 when user is not franchise admin', async () => {
+    if (!testFranchiseId) {
+      console.log('Skipping test - no test franchise available');
+      return;
+    }
+
+    const newStore = { name: 'Unauthorized Store' };
+
+    const res = await request(app)
+      .post(`/api/franchise/${testFranchiseId}/store`)
+      .set('Authorization', `Bearer ${regularToken}`)
+      .send(newStore);
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toBe('unable to create a store');
+  });
+
+});
 });
 });
