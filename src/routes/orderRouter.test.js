@@ -76,3 +76,45 @@ describe('GET /api/order/menu - Get menu', () => {
   });
 });
 
+describe('PUT /api/order/menu - Add menu item', () => {
+  const newMenuItem = {
+    title: 'Spicy Delight',
+    description: 'A hot pizza',
+    image: 'pizza_spicy.png',
+    price: 0.005,
+  };
+
+  test('should return 401 when not authenticated', async () => {
+    const res = await request(app)
+      .put('/api/order/menu')
+      .send(newMenuItem);
+
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('unauthorized');
+  });
+
+  test('should return 403 when non-admin tries to add menu item', async () => {
+    const res = await request(app)
+      .put('/api/order/menu')
+      .set('Authorization', `Bearer ${dinerToken}`)
+      .send(newMenuItem);
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toBe('unable to add menu item');
+  });
+
+  test('should allow admin to add a new menu item', async () => {
+    const res = await request(app)
+      .put('/api/order/menu')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(newMenuItem);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+
+    const addedItem = res.body.find((item) => item.title === newMenuItem.title);
+    expect(addedItem).toBeDefined();
+    expect(addedItem.description).toBe(newMenuItem.description);
+    expect(addedItem.price).toBe(newMenuItem.price);
+  });
+});
