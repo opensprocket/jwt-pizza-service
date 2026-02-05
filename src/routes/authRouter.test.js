@@ -199,5 +199,12 @@ describe('Authentication Middleware', () => {
 
     expect(protectedRes.status).toBe(200);
   });
+
+  test('should reject access to protected routes without token', async () => {
+    const protectedRes = await request(app).delete('/api/auth');
+
+    expect(protectedRes.status).toBe(401);
+  });
+
 });
 });
