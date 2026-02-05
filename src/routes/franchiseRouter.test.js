@@ -26,7 +26,7 @@ async function addAdminRole(userId) {
     } finally {
       connection.end();
     }
-  } catch (error) {
+  } catch {
     return false;
   }
 }
