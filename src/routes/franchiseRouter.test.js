@@ -323,6 +323,42 @@ describe('POST /api/franchise/:franchiseId/store - Create store', () => {
     expect(res.body.message).toBe('unable to create a store');
   });
 
+  test('should allow franchise admin to create a store', async () => {
+    if (!isAdminAvailable || !testFranchiseId) {
+      console.log('Skipping test - admin role or test franchise not available');
+      return;
+    }
+
+    const newStore = { name: 'SLC Store' };
+
+    const res = await request(app)
+      .post(`/api/franchise/${testFranchiseId}/store`)
+      .set('Authorization', `Bearer ${franchiseeToken}`)
+      .send(newStore);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.name).toBe(newStore.name);
+  });
+
+  test('should allow admin to create a store in any franchise', async () => {
+    if (!isAdminAvailable || !testFranchiseId) {
+      console.log('Skipping test - admin role or test franchise not available');
+      return;
+    }
+
+    const newStore = { name: 'Admin Store ' + Math.random().toString(36).substring(2, 8) };
+
+    const res = await request(app)
+      .post(`/api/franchise/${testFranchiseId}/store`)
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(newStore);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.name).toBe(newStore.name);
+  });
+
 });
 });
 });
