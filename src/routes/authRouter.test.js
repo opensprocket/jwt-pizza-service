@@ -185,5 +185,19 @@ describe('DELETE /api/auth - Logout', () => {
     expect(isLoggedIn).toBe(false);
   });
 });
+
+describe('Authentication Middleware', () => {
+  test('should allow access to protected routes with valid token', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    const protectedRes = await request(app)
+      .delete('/api/auth')
+      .set('Authorization', `Bearer ${loginRes.body.token}`);
+
+    expect(protectedRes.status).toBe(200);
+  });
 });
 });
