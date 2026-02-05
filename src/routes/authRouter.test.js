@@ -97,5 +97,18 @@ describe('PUT /api/auth - Login', () => {
     expect(loginRes.body.user.password).toBeUndefined();
   });
 
+  test('should verify JWT token contains correct user data', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    const decoded = jwt.verify(loginRes.body.token, config.jwtSecret);
+    expect(decoded.id).toBe(testUserId);
+    expect(decoded.name).toBe(testUser.name);
+    expect(decoded.email).toBe(testUser.email);
+    expect(decoded.roles).toEqual([{ role: 'diner' }]);
+  });
+
 });
 });
