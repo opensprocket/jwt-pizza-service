@@ -516,5 +516,4 @@ describe('Authorization and Edge Cases', () => {
       expect(Array.isArray(franchise.stores)).toBe(true);
     }
   });
-
 });
