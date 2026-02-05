@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../service.js');
+const { DB } = require('../database/database.js');
 const jwt = require('jsonwebtoken');
 const config = require('../config.js');
 
@@ -32,4 +33,17 @@ describe('POST /api/auth - Register', () => {
     expect(res.body.user.roles).toEqual([{ role: 'diner' }]);
     expect(res.body.user.id).toBeDefined();
   });
+
+  test('should return 400 when name is missing', async () => {
+    const invalidUser = {
+      email: 'test@test.com',
+      password: 'password123',
+    };
+
+    const res = await request(app).post('/api/auth').send(invalidUser);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('name, email, and password are required');
+  });
+
 });
