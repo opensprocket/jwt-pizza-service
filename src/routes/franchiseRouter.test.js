@@ -486,4 +486,15 @@ describe('DELETE /api/franchise/:franchiseId/store/:storeId - Delete store', () 
     expect([200, 403, 404]).toContain(res.status);
   });
 });
+
+describe('Authorization and Edge Cases', () => {
+  test('should handle invalid franchiseId parameter', async () => {
+    const res = await request(app)
+      .get('/api/franchise/invalid')
+      .set('Authorization', `Bearer ${regularToken}`);
+
+    // Should handle gracefully - either 200 with empty array or error
+    expect([200, 400, 404]).toContain(res.status);
+  });
+
 });
