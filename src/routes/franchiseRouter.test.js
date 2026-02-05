@@ -497,4 +497,12 @@ describe('Authorization and Edge Cases', () => {
     expect([200, 400, 404]).toContain(res.status);
   });
 
+  test('should handle invalid userId parameter', async () => {
+    const res = await request(app)
+      .get('/api/franchise/abc')
+      .set('Authorization', `Bearer ${regularToken}`);
+
+    expect([200, 400, 404]).toContain(res.status);
+  });
+
 });
