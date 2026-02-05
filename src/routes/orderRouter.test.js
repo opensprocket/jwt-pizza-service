@@ -56,3 +56,23 @@ afterAll(async () => {
   }
 });
 
+// Mock the global fetch for the factory service
+global.fetch = jest.fn();
+
+describe('GET /api/order/menu - Get menu', () => {
+  test('should return the menu items without authentication', async () => {
+    const res = await request(app).get('/api/order/menu');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    
+    // Verify structure if menu is not empty
+    if (res.body.length > 0) {
+      const item = res.body[0];
+      expect(item).toHaveProperty('title');
+      expect(item).toHaveProperty('image');
+      expect(item).toHaveProperty('price');
+      expect(item).toHaveProperty('description');
+    }
+  });
+});
+
