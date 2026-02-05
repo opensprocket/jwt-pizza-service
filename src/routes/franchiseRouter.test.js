@@ -136,5 +136,14 @@ describe('GET /api/franchise/:userId - List user franchises', () => {
     expect(res.body).toEqual([]);
   });
 
+  test('should not allow user to view other user franchises without admin role', async () => {
+    const res = await request(app)
+      .get(`/api/franchise/${franchiseeUserId}`)
+      .set('Authorization', `Bearer ${regularToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
 });
 });
