@@ -145,5 +145,18 @@ describe('GET /api/franchise/:userId - List user franchises', () => {
     expect(res.body).toEqual([]);
   });
 
+  test('should allow admin to view any user franchises', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping admin test - admin role not available');
+      return;
+    }
+
+    const res = await request(app)
+      .get(`/api/franchise/${franchiseeUserId}`)
+      .set('Authorization', `Bearer ${testUserToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
 });
 });
