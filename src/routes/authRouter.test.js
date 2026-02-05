@@ -46,4 +46,16 @@ describe('POST /api/auth - Register', () => {
     expect(res.body.message).toBe('name, email, and password are required');
   });
 
+  test('should return 400 when email is missing', async () => {
+    const invalidUser = {
+      name: 'Test User',
+      password: 'password123',
+    };
+
+    const res = await request(app).post('/api/auth').send(invalidUser);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('name, email, and password are required');
+  });
+
 });
