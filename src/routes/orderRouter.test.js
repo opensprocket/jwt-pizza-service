@@ -145,3 +145,60 @@ describe('GET /api/order - Get user orders', () => {
     expect(res.body).toHaveProperty('orders');
   });
 });
+
+describe('POST /api/order - Create order', () => {
+  const orderPayload = {
+    franchiseId: 1,
+    storeId: 1,
+    items: [{ menuId: 1, description: 'Veggie', price: 0.05 }],
+  };
+
+  beforeEach(() => {
+    fetch.mockClear();
+  });
+
+  test('should return 401 when not authenticated', async () => {
+    const res = await request(app)
+      .post('/api/order')
+      .send(orderPayload);
+
+    expect(res.status).toBe(401);
+  });
+
+  test('should create order and verify with factory successfully', async () => {
+    // Mock successful factory response
+    const factoryResponse = {
+      jwt: 'factory_jwt_token_123',
+      reportUrl: 'http://factory-report.com',
+    };
+
+    fetch.mockResolvedValue({
+      ok: true,
+      json: async () => factoryResponse,
+    });
+
+    const res = await request(app)
+      .post('/api/order')
+      .set('Authorization', `Bearer ${dinerToken}`)
+      .send(orderPayload);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('order');
+    expect(res.body).toHaveProperty('jwt', factoryResponse.jwt);
+    expect(res.body).toHaveProperty('followLinkToEndChaos', factoryResponse.reportUrl);
+
+    // Verify fetch was called with correct parameters
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/order'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          authorization: expect.stringContaining('Bearer'),
+        }),
+      })
+    );
+  });
+
+});
