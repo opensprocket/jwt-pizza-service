@@ -110,5 +110,24 @@ describe('PUT /api/auth - Login', () => {
     expect(decoded.roles).toEqual([{ role: 'diner' }]);
   });
 
+  test('should handle invalid credentials', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: testUser.email,
+      password: 'wrongpassword',
+    });
+
+    expect(loginRes.status).toBeGreaterThanOrEqual(400);
+  });
+
+  test('should handle non-existent user', async () => {
+    const loginRes = await request(app).put('/api/auth').send({
+      email: 'nonexistent@test.com',
+      password: 'password',
+    });
+
+    expect(loginRes.status).toBeGreaterThanOrEqual(400);
+  });
+});
+
 });
 });
