@@ -422,5 +422,33 @@ describe('DELETE /api/franchise/:franchiseId/store/:storeId - Delete store', () 
     expect(res.body.message).toBe('unauthorized');
   });
 
+  test('should return 403 when user is not franchise admin', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping test - admin role not available');
+      return;
+    }
+
+    const res = await request(app)
+      .delete(`/api/franchise/${testStoreFranchiseId}/store/${testStore}`)
+      .set('Authorization', `Bearer ${regularToken}`);
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toBe('unable to delete a store');
+  });
+
+  test('should allow franchise admin to delete their store', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping test - admin role not available');
+      return;
+    }
+
+    const res = await request(app)
+      .delete(`/api/franchise/${testStoreFranchiseId}/store/${testStore}`)
+      .set('Authorization', `Bearer ${franchiseeToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('store deleted');
+  });
+
 });
 });
