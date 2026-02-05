@@ -89,4 +89,11 @@ describe('GET /api/franchise - List franchises', () => {
     expect(res.body).toHaveProperty('more');
   });
 
+  test('should support filtering by name', async () => {
+    const res = await request(app).get('/api/franchise?name=pizza');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('franchises');
+  });
+
 });
