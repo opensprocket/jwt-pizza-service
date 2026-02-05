@@ -236,4 +236,17 @@ describe('Edge Cases', () => {
     expect(res.status).toBe(400);
   });
 
+  test('should handle special characters in name', async () => {
+    const specialUser = {
+      name: 'åŒ—äº¬',
+      email: Math.random().toString(36).substring(2, 12) + '@test.com',
+      password: 'password123',
+    };
+
+    const res = await request(app).post('/api/auth').send(specialUser);
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.name).toBe(specialUser.name);
+  });
+
 });
