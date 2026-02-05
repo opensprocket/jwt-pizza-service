@@ -201,4 +201,26 @@ describe('POST /api/order - Create order', () => {
     );
   });
 
+  test('should handle factory service failure gracefully', async () => {
+    // Mock failed factory response
+    const factoryError = {
+      reportUrl: 'http://factory-error-report.com',
+      message: 'Factory busy',
+    };
+
+    fetch.mockResolvedValue({
+      ok: false,
+      json: async () => factoryError,
+    });
+
+    const res = await request(app)
+      .post('/api/order')
+      .set('Authorization', `Bearer ${dinerToken}`)
+      .send(orderPayload);
+
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('message', 'Failed to fulfill order at factory');
+    expect(res.body).toHaveProperty('followLinkToEndChaos', factoryError.reportUrl);
+  });
+
 });
