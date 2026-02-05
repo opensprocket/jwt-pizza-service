@@ -161,6 +161,15 @@ describe('DELETE /api/auth - Logout', () => {
     expect(logoutRes.body.message).toBe('unauthorized');
   });
 
+  test('should return 401 when malformed authorization header', async () => {
+    const logoutRes = await request(app)
+      .delete('/api/auth')
+      .set('Authorization', 'InvalidFormat');
+
+    expect(logoutRes.status).toBe(401);
+    expect(logoutRes.body.message).toBe('unauthorized');
+  });
+
 });
 });
 });
