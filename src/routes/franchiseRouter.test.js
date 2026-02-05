@@ -188,5 +188,31 @@ describe('POST /api/franchise - Create franchise', () => {
     expect(res.body.message).toBe('unable to create a franchise');
   });
 
+  test('should allow admin to create a new franchise', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping admin test - admin role not available');
+      return;
+    }
+
+    const newFranchise = {
+      name: 'Pizza Palace ' + Math.random().toString(36).substring(2, 8),
+      admins: [{ email: franchiseeUser.email }],
+    };
+
+    const res = await request(app)
+      .post('/api/franchise')
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(newFranchise);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.name).toBe(newFranchise.name);
+    expect(res.body).toHaveProperty('admins');
+    expect(Array.isArray(res.body.admins)).toBe(true);
+    
+    // Store for later tests
+    testFranchiseId = res.body.id;
+  });
+
 });
 });
