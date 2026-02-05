@@ -64,3 +64,10 @@ beforeAll(async () => {
   regularUserId = regularRes.body.user.id;
 });
 
+afterAll(async () => {
+  // Close any open database connections
+  if (DB.connection) {
+    await DB.connection.end();
+  }
+});
+
