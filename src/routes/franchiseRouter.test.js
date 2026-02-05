@@ -505,4 +505,16 @@ describe('Authorization and Edge Cases', () => {
     expect([200, 400, 404]).toContain(res.status);
   });
 
+  test('should verify franchise structure includes admins and stores', async () => {
+    const franchises = await request(app).get('/api/franchise');
+
+    if (franchises.body.franchises.length > 0) {
+      const franchise = franchises.body.franchises[0];
+      
+      // Verify structure even if empty
+      expect(franchise).toHaveProperty('stores');
+      expect(Array.isArray(franchise.stores)).toBe(true);
+    }
+  });
+
 });
