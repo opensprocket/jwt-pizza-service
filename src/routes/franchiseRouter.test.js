@@ -96,4 +96,17 @@ describe('GET /api/franchise - List franchises', () => {
     expect(res.body).toHaveProperty('franchises');
   });
 
+  test('should return franchise with correct structure', async () => {
+    const res = await request(app).get('/api/franchise');
+
+    expect(res.status).toBe(200);
+    if (res.body.franchises.length > 0) {
+      const franchise = res.body.franchises[0];
+      expect(franchise).toHaveProperty('id');
+      expect(franchise).toHaveProperty('name');
+      expect(franchise).toHaveProperty('stores');
+      expect(Array.isArray(franchise.stores)).toBe(true);
+    }
+  });
+});
 });
