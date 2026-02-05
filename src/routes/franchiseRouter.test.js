@@ -214,5 +214,27 @@ describe('POST /api/franchise - Create franchise', () => {
     testFranchiseId = res.body.id;
   });
 
+  test('should create franchise with multiple admins', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping admin test - admin role not available');
+      return;
+    }
+
+    const newFranchise = {
+      name: 'Multi Admin Franchise ' + Math.random().toString(36).substring(2, 8),
+      admins: [
+        { email: franchiseeUser.email },
+        { email: regularUser.email },
+      ],
+    };
+
+    const res = await request(app)
+      .post('/api/franchise')
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(newFranchise);
+
+    expect(res.status).toBe(200);
+    expect(res.body.admins.length).toBeGreaterThanOrEqual(1);
+  });
 });
 });
