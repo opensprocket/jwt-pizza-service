@@ -127,5 +127,14 @@ describe('GET /api/franchise/:userId - List user franchises', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  test('should return empty array when user has no franchises', async () => {
+    const res = await request(app)
+      .get(`/api/franchise/${regularUserId}`)
+      .set('Authorization', `Bearer ${regularToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
 });
 });
