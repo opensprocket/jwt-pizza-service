@@ -450,5 +450,26 @@ describe('DELETE /api/franchise/:franchiseId/store/:storeId - Delete store', () 
     expect(res.body.message).toBe('store deleted');
   });
 
+  test('should allow admin to delete any store', async () => {
+    if (!isAdminAvailable) {
+      console.log('Skipping test - admin role not available');
+      return;
+    }
+
+    // Create a new store to delete
+    const store = { name: 'Admin Delete Store' };
+    const storeRes = await request(app)
+      .post(`/api/franchise/${testStoreFranchiseId}/store`)
+      .set('Authorization', `Bearer ${testUserToken}`)
+      .send(store);
+
+    const res = await request(app)
+      .delete(`/api/franchise/${testStoreFranchiseId}/store/${storeRes.body.id}`)
+      .set('Authorization', `Bearer ${testUserToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('store deleted');
+  });
+
 });
 });
