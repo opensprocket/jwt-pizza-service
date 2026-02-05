@@ -224,4 +224,16 @@ describe('Authentication Middleware', () => {
     expect(retryRes.status).toBe(401);
   });
 });
+
+describe('Edge Cases', () => {
+  test('should handle empty string values', async () => {
+    const res = await request(app).post('/api/auth').send({
+      name: '',
+      email: '',
+      password: '',
+    });
+
+    expect(res.status).toBe(400);
+  });
+
 });
