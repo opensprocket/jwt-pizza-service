@@ -117,5 +117,15 @@ describe('GET /api/franchise/:userId - List user franchises', () => {
     expect(res.status).toBe(401);
     expect(res.body.message).toBe('unauthorized');
   });
+
+  test('should allow user to view their own franchises', async () => {
+    const res = await request(app)
+      .get(`/api/franchise/${franchiseeUserId}`)
+      .set('Authorization', `Bearer ${franchiseeToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
 });
 });
