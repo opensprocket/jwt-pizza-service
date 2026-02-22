@@ -114,6 +114,12 @@ class DB {
 
     const offset = page * limit;
     
+    // Convert plain name to wildcard pattern
+    if (nameFilter && nameFilter !== '*' && !nameFilter.includes('%')) {
+      nameFilter = `%${nameFilter}%`;
+    } else {
+      nameFilter = nameFilter.replace(/\*/g, '%');
+    }
 
     try {
       let users = await this.query(connection, `SELECT id, name, email FROM user WHERE name LIKE ? LIMIT ${limit + 1} OFFSET ${offset}`, [nameFilter]);
