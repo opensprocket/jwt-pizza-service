@@ -32,6 +32,21 @@ test('list users with pagination', async () => {
   expect(typeof listUsersRes.body.more).toBe('boolean');
 });
 
+test('list users with name filter', async () => {
+  const [user, userToken] = await registerUser(request(app));
+  const uniqueName = randomName();
+  await registerUserWithName(request(app), 'Test User ' + uniqueName);
+  
+  const listUsersRes = await request(app)
+    .get(`/api/user?name=${uniqueName}`)
+    .set('Authorization', 'Bearer ' + userToken);
+  expect(listUsersRes.status).toBe(200);
+  expect(Array.isArray(listUsersRes.body.users)).toBe(true);
+  // Should find at least the user we just created with that name
+  const matchingUsers = listUsersRes.body.users.filter(u => u.name.includes(uniqueName));
+  expect(matchingUsers.length).toBeGreaterThan(0);
+});
+
 async function registerUser(service) {
   const testUser = {
     name: 'pizza diner',
