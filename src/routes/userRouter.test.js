@@ -22,6 +22,16 @@ test('list users', async () => {
   expect(listUsersRes.body.more).toBeDefined();
 });
 
+test('list users with pagination', async () => {
+  const [user, userToken] = await registerUser(request(app));
+  const listUsersRes = await request(app)
+    .get('/api/user?page=0&limit=5')
+    .set('Authorization', 'Bearer ' + userToken);
+  expect(listUsersRes.status).toBe(200);
+  expect(Array.isArray(listUsersRes.body.users)).toBe(true);
+  expect(typeof listUsersRes.body.more).toBe('boolean');
+});
+
 async function registerUser(service) {
   const testUser = {
     name: 'pizza diner',
