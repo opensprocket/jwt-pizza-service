@@ -1,10 +1,10 @@
 const request = require('supertest');
 const app = require('../service.js');
-const { DB } = require('../database/database.js');
-const jwt = require('jsonwebtoken');
-const config = require('../config.js');
+// const { DB } = require('../database/database.js');
+// const jwt = require('jsonwebtoken');
+// const config = require('../config.js');
 
-const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a'};
+// const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a'};
 
 test('list users unauthorized', async () => {
   const listUsersRes = await request(app).get('/api/user');
@@ -20,6 +20,7 @@ test('list users', async () => {
   expect(listUsersRes.body.users).toBeDefined();
   expect(Array.isArray(listUsersRes.body.users)).toBe(true);
   expect(listUsersRes.body.more).toBeDefined();
+  console.log(user);
 });
 
 test('list users with pagination', async () => {
@@ -30,6 +31,7 @@ test('list users with pagination', async () => {
   expect(listUsersRes.status).toBe(200);
   expect(Array.isArray(listUsersRes.body.users)).toBe(true);
   expect(typeof listUsersRes.body.more).toBe('boolean');
+  console.log(user);
 });
 
 test('list users with name filter', async () => {
@@ -45,6 +47,7 @@ test('list users with name filter', async () => {
   // Should find at least the user we just created with that name
   const matchingUsers = listUsersRes.body.users.filter(u => u.name.includes(uniqueName));
   expect(matchingUsers.length).toBeGreaterThan(0);
+  console.log(user);
 });
 
 async function registerUser(service) {
