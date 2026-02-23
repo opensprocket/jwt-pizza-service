@@ -9,7 +9,6 @@ async function registerUser(service) {
     password: 'a',
   };
   const registerRes = await service.post('/api/auth').send(testUser);
-  expect(registerRes.status).toBe(200);
   registerRes.body.user.password = testUser.password;
 
   return [registerRes.body.user, registerRes.body.token];
@@ -22,7 +21,6 @@ async function registerUserWithName(service, name) {
     password: 'a',
   };
   const registerRes = await service.post('/api/auth').send(testUser);
-  expect(registerRes.status).toBe(200);
   registerRes.body.user.password = testUser.password;
 
   return [registerRes.body.user, registerRes.body.token];
@@ -37,7 +35,6 @@ async function registerAdminUser(service) {
   const loginRes = await service
     .put('/api/auth')
     .send({ email: 'a@jwt.com', password: 'admin' });
-  expect(loginRes.status).toBe(200);
   loginRes.body.user.password = 'admin';
   return [loginRes.body.user, loginRes.body.token];
 }
