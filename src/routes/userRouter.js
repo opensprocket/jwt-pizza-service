@@ -98,7 +98,7 @@ userRouter.delete(
     
     const userId = Number(req.params.userId);
     await DB.deleteUser(userId);
-    res.json({ message: 'user deleted' });
+    res.status(200).send();
   })
 );
 
