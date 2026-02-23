@@ -56,9 +56,6 @@ describe('List user tests', () => {
     expect(listUsersRes.status).toBe(200);
     expect(listUsersRes.body.users).toBeDefined();
     expect(Array.isArray(listUsersRes.body.users)).toBe(true);
-    expect(listUsersRes.body.more).toBeDefined();
-    console.log(user);
-  });
     expect(typeof listUsersRes.body.more).toBe('boolean');
     
   if (listUsersRes.body.users.length > 0) {
@@ -94,7 +91,6 @@ describe('List user tests', () => {
     // Should find at least the user we just created with that name
     const matchingUsers = listUsersRes.body.users.filter(u => u.name.includes(uniqueName));
     expect(matchingUsers.length).toBeGreaterThan(0);
-    console.log(user);
   });
 });
 
