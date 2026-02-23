@@ -49,7 +49,7 @@ describe('List user tests', () => {
   });
 
   test('list users', async () => {
-    const [user, userToken] = await registerUser(request(app));
+    const [, userToken] = await registerUser(request(app));
     const listUsersRes = await request(app)
       .get('/api/user')
       .set('Authorization', 'Bearer ' + userToken);
@@ -59,22 +59,32 @@ describe('List user tests', () => {
     expect(listUsersRes.body.more).toBeDefined();
     console.log(user);
   });
+    expect(typeof listUsersRes.body.more).toBe('boolean');
+    
+  if (listUsersRes.body.users.length > 0) {
+    const u = listUsersRes.body.users[0];
+    expect(u).toHaveProperty('id');
+    expect(u).toHaveProperty('name');
+    expect(u).toHaveProperty('email');
+  }
+});
 
   test('list users with pagination', async () => {
-    const [user, userToken] = await registerUser(request(app));
+    const [, userToken] = await registerUser(request(app));
     const listUsersRes = await request(app)
       .get('/api/user?page=0&limit=5')
       .set('Authorization', 'Bearer ' + userToken);
     expect(listUsersRes.status).toBe(200);
     expect(Array.isArray(listUsersRes.body.users)).toBe(true);
     expect(typeof listUsersRes.body.more).toBe('boolean');
-    console.log(user);
+    
+    expect(listUsersRes.body.users.length).toBeLessThanOrEqual(5);
   });
 
   test('list users with name filter', async () => {
-    const [user, userToken] = await registerUser(request(app));
-    const uniqueName = randomName();
-    await registerUserWithName(request(app), 'Test User ' + uniqueName);
+    const [, userToken] = await registerUser(request(app));
+    const uniqueName = 'FilterTarget_' + randomName();
+    await registerUserWithName(request(app), uniqueName);
     
     const listUsersRes = await request(app)
       .get(`/api/user?name=${uniqueName}`)
