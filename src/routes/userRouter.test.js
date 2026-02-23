@@ -107,4 +107,33 @@ describe('Delete user tests', () => {
     expect(deleteRes.status).toBe(403);
   });
   
+  test('delete user as admin succeeds', async () => {
+    const [, adminToken] = await registerAdminUser(request(app));
+    const [targetUser] = await registerUser(request(app));
+
+    const deleteRes = await request(app)
+      .delete(`/api/user/${targetUser.id}`)
+      .set('Authorization', 'Bearer ' + adminToken);
+
+    expect(deleteRes.status).toBe(200);
+
+    // Confirm the user is gone from the list
+    const listRes = await request(app)
+      .get(`/api/user?name=${targetUser.name}`)
+      .set('Authorization', 'Bearer ' + adminToken);
+
+    const stillExists = listRes.body.users.some((u) => u.id === targetUser.id);
+    expect(stillExists).toBe(false);
+  });
+  
+  test('delete non-existent user returns 404', async () => {
+    const [, adminToken] = await registerAdminUser(request(app));
+
+    const deleteRes = await request(app)
+      .delete('/api/user/999999999')
+      .set('Authorization', 'Bearer ' + adminToken);
+
+    expect(deleteRes.status).toBe(404);
+  });
+  
 });
