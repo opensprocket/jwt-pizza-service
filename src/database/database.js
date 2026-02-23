@@ -164,6 +164,11 @@ class DB {
       if (more) {
         users = users.slice(0, limitNum);
       }
+      
+      // get user roles
+      for (const user of users) {
+        const roleResult = await this.query(connection, `SELECT role, objectId FROM userRole WHERE userId=?`, [user.id]);
+        user.roles = roleResult.map((r) => ({ role: r.role, objectId: r.objectId || undefined }));
       }
 
       return [users, more];
