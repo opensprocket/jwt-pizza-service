@@ -28,7 +28,7 @@ async function registerUserWithName(service, name) {
 
 function randomName() {
   return Math.random().toString(36).substring(2, 12);
-}}
+}
 
 async function registerAdminUser(service) {
   // Log in as the seeded admin
@@ -86,3 +86,25 @@ describe('List user tests', () => {
   });
 });
 
+describe('Delete user tests', () => {
+  
+  test('delete user unauthorized', async () => {
+    const [user] = await registerUser(request(app));
+    
+    const deleteRes = (await request(app).delete(`/api/user/${user.id}`));
+    expect(deleteRes.status).toBe(401);
+  });
+  
+  test('delete user as self is forbidden', async () => {
+    // A non-admin user should not be able to delete themselves (or others)
+    const [user, userToken] = await registerUser(request(app));
+
+    const deleteRes = await request(app)
+      .delete(`/api/user/${user.id}`)
+      .set('Authorization', 'Bearer ' + userToken);
+
+    // Only admins can delete users
+    expect(deleteRes.status).toBe(403);
+  });
+  
+});
