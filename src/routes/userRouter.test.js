@@ -35,7 +35,10 @@ async function registerAdminUser(service) {
   const loginRes = await service
     .put('/api/auth')
     .send({ email: 'a@jwt.com', password: 'admin' });
-  loginRes.body.user.password = 'admin';
+  expect(loginRes.status).toBe(200);
+  expect(loginRes.body.user).toBeDefined();
+  expect(loginRes.body.token).toBeDefined();
+  // loginRes.body.user.password = 'admin';
   return [loginRes.body.user, loginRes.body.token];
 }
 
