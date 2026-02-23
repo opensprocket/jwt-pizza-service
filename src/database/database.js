@@ -4,6 +4,7 @@ const config = require('../config.js');
 const { StatusCodeError } = require('../endpointHelper.js');
 const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
+
 class DB {
   constructor() {
     this.initialized = this.initializeDatabase();
@@ -138,21 +139,31 @@ class DB {
   async getUsers(page = 0, limit = 10, nameFilter = '*') {
     const connection = await this.getConnection();
 
-    const offset = page * limit;
+    const pageNum = Number(page) || 0;
+    const limitNum = Number(limit) || 10;
+    const offset = pageNum * limitNum;
     
     // Convert plain name to wildcard pattern
-    if (nameFilter && nameFilter !== '*' && !nameFilter.includes('%')) {
-      nameFilter = `%${nameFilter}%`;
+    let sqlFilter;
+    if (!nameFilter || nameFilter === '*') {
+      sqlFilter = '%';
+    } else if (nameFilter.includes('%') || nameFilter.includes('*')) {
+      sqlFilter = nameFilter.replace(/\*/g, '%');
     } else {
-      nameFilter = nameFilter.replace(/\*/g, '%');
+      sqlFilter = `%${nameFilter}%`;
     }
 
     try {
-      let users = await this.query(connection, `SELECT id, name, email FROM user WHERE name LIKE ? LIMIT ${limit + 1} OFFSET ${offset}`, [nameFilter]);
+      let users = await this.query(
+        connection,
+        `SELECT id, name, email FROM user WHERE name LIKE ? LIMIT ${limitNum + 1} OFFSET ${offset}`,
+        [sqlFilter]
+      );
 
-      const more = users.length > limit;
+      const more = users.length > limitNum;
       if (more) {
-        users = users.slice(0, limit);
+        users = users.slice(0, limitNum);
+      }
       }
 
       return [users, more];
