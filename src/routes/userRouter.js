@@ -15,12 +15,33 @@ userRouter.docs = [
     response: { id: 1, name: '常用名字', email: 'a@jwt.com', roles: [{ role: 'admin' }] },
   },
   {
+    method: 'GET',
+    path: '/api/user?page=1&limit=10&name=*',
+    requiresAuth: true,
+    description: 'Gets a paginated, filterable list of users',
+    example: `curl - GET "localhost:3000/api/user?page=0&limit=10&name=*" -H 'Authorization: Bearer tttttt'`,
+    response: {
+      users: [
+        { id: 1, name: '常用名字', email: 'a@jwt.com', roles: [{ role: 'admin' }] },
+      ],
+      more: false,
+    },
+  },
+  {
     method: 'PUT',
     path: '/api/user/:userId',
     requiresAuth: true,
     description: 'Update user',
     example: `curl -X PUT localhost:3000/api/user/1 -d '{"name":"常用名字", "email":"a@jwt.com", "password":"admin"}' -H 'Content-Type: application/json' -H 'Authorization: Bearer tttttt'`,
     response: { user: { id: 1, name: '常用名字', email: 'a@jwt.com', roles: [{ role: 'admin' }] }, token: 'tttttt' },
+  },
+  {
+    method: 'DELETE',
+    path: '/api/user/:userId',
+    requiresAuth: true,
+    description: 'Delete a user (admin only)',
+    example: `curl -X DELETE localhost:3000/api/user/1 -H 'Authorization: Bearer tttttt'`,
+    response: { message: 'user deleted' },
   },
 ];
 
@@ -72,13 +93,12 @@ userRouter.delete(
   asyncHandler(async (req, res) => {
     const requestingUser = req.user;
     if (!requestingUser.isRole(Role.Admin)) {
-      return res.status(403).json({ message: 'Unauthorized' });
+      return res.status(403).json({ message: 'unauthorized' });
     }
     
     const userId = Number(req.params.userId);
     await DB.deleteUser(userId);
-    res.json({ message: 'User deleted' });
-    
+    res.json({ message: 'user deleted' });
   })
 );
 
