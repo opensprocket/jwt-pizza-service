@@ -9,6 +9,7 @@ async function registerUser(service) {
     password: 'a',
   };
   const registerRes = await service.post('/api/auth').send(testUser);
+  expect(registerRes.status).toBe(200);
   registerRes.body.user.password = testUser.password;
 
   return [registerRes.body.user, registerRes.body.token];
@@ -16,11 +17,12 @@ async function registerUser(service) {
 
 async function registerUserWithName(service, name) {
   const testUser = {
-    name: name,
+    name,
     email: `${randomName()}@test.com`,
     password: 'a',
   };
   const registerRes = await service.post('/api/auth').send(testUser);
+  expect(registerRes.status).toBe(200);
   registerRes.body.user.password = testUser.password;
 
   return [registerRes.body.user, registerRes.body.token];
