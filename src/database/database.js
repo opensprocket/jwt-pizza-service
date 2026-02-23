@@ -104,7 +104,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       // Does the user exist first? 
-      const userResult = await this.query(connection `SELECT * FROM user WHERE id=?`, [userId]);
+      const userResult = await this.query(connection, `SELECT * FROM user WHERE id=?`, [userId]);
       if (userResult.length === 0) {
         throw new StatusCodeError('unknown user', 404);
       }
