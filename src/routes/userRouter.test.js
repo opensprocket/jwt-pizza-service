@@ -128,7 +128,7 @@ describe('Delete user tests', () => {
   test('delete user unauthorized', async () => {
     const [user] = await registerUser(request(app));
     
-    const deleteRes = (await request(app).delete(`/api/user/${user.id}`));
+    const deleteRes = await request(app).delete(`/api/user/${user.id}`);
     expect(deleteRes.status).toBe(401);
   });
   
