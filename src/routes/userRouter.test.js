@@ -92,6 +92,35 @@ describe('List user tests', () => {
     const matchingUsers = listUsersRes.body.users.filter(u => u.name.includes(uniqueName));
     expect(matchingUsers.length).toBeGreaterThan(0);
   });
+  
+  test('list users page 0 and page 1 differ when enough users exist', async () => {
+    const [, adminToken] = await registerAdminUser(request(app));
+  
+    // Register enough users to span two pages of size 1
+    await registerUser(request(app));
+    await registerUser(request(app));
+  
+    const page0Res = await request(app)
+      .get('/api/user?page=0&limit=1')
+      .set('Authorization', 'Bearer ' + adminToken);
+  
+    const page1Res = await request(app)
+      .get('/api/user?page=1&limit=1')
+      .set('Authorization', 'Bearer ' + adminToken);
+  
+    expect(page0Res.status).toBe(200);
+    expect(page1Res.status).toBe(200);
+  
+    // They should be different pages of data
+    const ids0 = page0Res.body.users.map((u) => u.id);
+    const ids1 = page1Res.body.users.map((u) => u.id);
+    const overlap = ids0.filter((id) => ids1.includes(id));
+    expect(overlap.length).toBe(0);
+  
+    // page 0 should report more=true
+    expect(page0Res.body.more).toBe(true);
+  });
+  
 });
 
 describe('Delete user tests', () => {
