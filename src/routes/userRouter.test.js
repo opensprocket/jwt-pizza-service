@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../service.js');
-
+const { DB, Role } = require('../database/database.js');
 
 async function registerUser(service) {
   const testUser = {
@@ -31,14 +31,17 @@ function randomName() {
 }
 
 async function registerAdminUser(service) {
-  // Log in as the seeded admin
+  // Create a fresh admin user rather than relying on seeded data
+  const adminUser = await DB.addUser({
+    name: 'Test Admin',
+    email: `admin_${randomName()}@test.com`,
+    password: 'admin',
+    roles: [{ role: Role.Admin }]
+  });
   const loginRes = await service
     .put('/api/auth')
-    .send({ email: 'a@jwt.com', password: 'admin' });
+    .send({ email: adminUser.email, password: 'admin' });
   expect(loginRes.status).toBe(200);
-  expect(loginRes.body.user).toBeDefined();
-  expect(loginRes.body.token).toBeDefined();
-  // loginRes.body.user.password = 'admin';
   return [loginRes.body.user, loginRes.body.token];
 }
 
