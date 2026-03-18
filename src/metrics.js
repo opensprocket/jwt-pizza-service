@@ -223,3 +223,20 @@ function sendToGrafana(metrics) {
     });
 }
 
+// Periodic reporting
+
+/**
+ * Start the metrics reporting loop.
+ * @param {number} intervalMs  default 60 000 (1 minute)
+ */
+function sendMetricsPeriodically(intervalMs = 60_000) {
+  setInterval(() => {
+    try {
+      sendToGrafana(collectMetrics());
+      resetIntervalCounters();
+    } catch (err) {
+      console.error('Unexpected error in metrics loop:', err.message);
+    }
+  }, intervalMs);
+}
+
