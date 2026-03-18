@@ -101,3 +101,15 @@ function pizzaPurchase(success, latencyMs, revenue) {
   }
 }
 
+// System helpers
+
+function getCpuUsagePercentage() {
+  const cpuUsage = os.loadavg()[0] / os.cpus().length;
+  return parseFloat((cpuUsage * 100).toFixed(2));
+}
+
+function getMemoryUsagePercentage() {
+  const used = os.totalmem() - os.freemem();
+  return parseFloat(((used / os.totalmem()) * 100).toFixed(2));
+}
+
