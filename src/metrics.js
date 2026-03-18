@@ -146,3 +146,44 @@ function buildMetric(name, value, unit, metricType, valueType, attributes = {}) 
   return metric;
 }
 
+function collectMetrics() {
+  const avgServiceLatency =
+    latencyMetrics.serviceCount > 0
+      ? latencyMetrics.serviceTotal / latencyMetrics.serviceCount
+      : 0;
+
+  const avgPizzaLatency =
+    latencyMetrics.pizzaCount > 0
+      ? latencyMetrics.pizzaTotal / latencyMetrics.pizzaCount
+      : 0;
+
+  return [
+    // HTTP request counts
+    buildMetric('http_requests_total',  httpMetrics.total,  '1', 'sum', 'asInt'),
+    buildMetric('http_requests_get',    httpMetrics.GET,    '1', 'sum', 'asInt', { method: 'GET' }),
+    buildMetric('http_requests_post',   httpMetrics.POST,   '1', 'sum', 'asInt', { method: 'POST' }),
+    buildMetric('http_requests_put',    httpMetrics.PUT,    '1', 'sum', 'asInt', { method: 'PUT' }),
+    buildMetric('http_requests_delete', httpMetrics.DELETE, '1', 'sum', 'asInt', { method: 'DELETE' }),
+
+    // Active users (gauge — point-in-time value)
+    buildMetric('active_users', activeUsers, '1', 'gauge', 'asInt'),
+
+    // Auth attempts
+    buildMetric('auth_attempts_success', authMetrics.success, '1', 'sum', 'asInt', { result: 'success' }),
+    buildMetric('auth_attempts_failure', authMetrics.failure, '1', 'sum', 'asInt', { result: 'failure' }),
+
+    // System
+    buildMetric('system_cpu_percent',    getCpuUsagePercentage(),    '%', 'gauge', 'asDouble'),
+    buildMetric('system_memory_percent', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble'),
+
+    // Pizza purchases
+    buildMetric('pizza_sold',     pizzaMetrics.sold,     '1',  'sum', 'asInt'),
+    buildMetric('pizza_failures', pizzaMetrics.failures, '1',  'sum', 'asInt'),
+    buildMetric('pizza_revenue',  pizzaMetrics.revenue,  'USD','sum', 'asDouble'),
+
+    // Latency (averages over the interval)
+    buildMetric('latency_service_ms', avgServiceLatency, 'ms', 'gauge', 'asDouble'),
+    buildMetric('latency_pizza_ms',   avgPizzaLatency,   'ms', 'gauge', 'asDouble'),
+  ];
+}
+
