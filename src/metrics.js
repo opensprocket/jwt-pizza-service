@@ -83,3 +83,21 @@ function userLogout() {
   if (activeUsers > 0) activeUsers--;
 }
 
+/**
+ * Call after every pizza factory request completes (success or failure).
+ * @param {boolean} success
+ * @param {number}  latencyMs  - elapsed ms for the factory fetch call
+ * @param {number}  revenue    - total price of the order (0 on failure)
+ */
+function pizzaPurchase(success, latencyMs, revenue) {
+  latencyMetrics.pizzaTotal += latencyMs;
+  latencyMetrics.pizzaCount++;
+
+  if (success) {
+    pizzaMetrics.sold++;
+    pizzaMetrics.revenue += revenue;
+  } else {
+    pizzaMetrics.failures++;
+  }
+}
+
