@@ -187,3 +187,12 @@ function collectMetrics() {
   ];
 }
 
+// Reset per-interval counters after each send. Gauges (activeUsers, system) are not reset.
+function resetIntervalCounters() {
+  httpMetrics.total = httpMetrics.GET = httpMetrics.POST = httpMetrics.PUT = httpMetrics.DELETE = 0;
+  authMetrics.success = authMetrics.failure = 0;
+  pizzaMetrics.sold = pizzaMetrics.failures = pizzaMetrics.revenue = 0;
+  latencyMetrics.serviceTotal = latencyMetrics.serviceCount = 0;
+  latencyMetrics.pizzaTotal   = latencyMetrics.pizzaCount   = 0;
+}
+
