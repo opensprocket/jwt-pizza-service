@@ -61,3 +61,15 @@ function requestTracker(req, res, next) {
   next();
 }
 
+/**
+ * Call after every login attempt.
+ * @param {boolean} success
+ */
+function authAttempt(success) {
+  if (success) {
+    authMetrics.success++;
+  } else {
+    authMetrics.failure++;
+  }
+}
+
