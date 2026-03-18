@@ -40,3 +40,24 @@ const pizzaMetrics = {
 
 // Public API used by routers
 
+/**
+ * Express middleware. Mount with app.use(metrics.requestTracker) before routers.
+ * Tracks per-method counts, total count, and per-request service latency.
+ */
+function requestTracker(req, res, next) {
+  const start = Date.now();
+
+  httpMetrics.total++;
+  const method = req.method.toUpperCase();
+  if (method in httpMetrics) {
+    httpMetrics[method]++;
+  }
+
+  res.on('finish', () => {
+    latencyMetrics.serviceTotal += Date.now() - start;
+    latencyMetrics.serviceCount++;
+  });
+
+  next();
+}
+
