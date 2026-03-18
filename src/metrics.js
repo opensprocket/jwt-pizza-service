@@ -73,3 +73,13 @@ function authAttempt(success) {
   }
 }
 
+/** Call after a successful login (register counts too — user is now active). */
+function userLogin() {
+  activeUsers++;
+}
+
+/** Call after a successful logout. */
+function userLogout() {
+  if (activeUsers > 0) activeUsers--;
+}
+
