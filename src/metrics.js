@@ -113,3 +113,36 @@ function getMemoryUsagePercentage() {
   return parseFloat(((used / os.totalmem()) * 100).toFixed(2));
 }
 
+// Metric serialization
+
+/**
+ * Build a single OTel metric object.
+ * metricType: 'sum' | 'gauge'
+ * valueType:  'asInt' | 'asDouble'
+ */
+function buildMetric(name, value, unit, metricType, valueType, attributes = {}) {
+  const attrs = { source: config.metrics?.source ?? 'unknown', ...attributes };
+
+  const dataPoint = {
+    [valueType]: value,
+    timeUnixNano: Date.now() * 1_000_000,
+    attributes: Object.entries(attrs).map(([key, val]) => ({
+      key,
+      value: { stringValue: String(val) },
+    })),
+  };
+
+  const metric = {
+    name,
+    unit,
+    [metricType]: { dataPoints: [dataPoint] },
+  };
+
+  if (metricType === 'sum') {
+    metric.sum.aggregationTemporality = 'AGGREGATION_TEMPORALITY_CUMULATIVE';
+    metric.sum.isMonotonic = true;
+  }
+
+  return metric;
+}
+
