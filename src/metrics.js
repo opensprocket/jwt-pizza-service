@@ -240,3 +240,13 @@ function sendMetricsPeriodically(intervalMs = 60_000) {
   }, intervalMs);
 }
 
+// Exports
+
+module.exports = {
+  requestTracker,
+  authAttempt,
+  userLogin,
+  userLogout,
+  pizzaPurchase,
+  sendMetricsPeriodically,
+};
