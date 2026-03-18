@@ -196,3 +196,30 @@ function resetIntervalCounters() {
   latencyMetrics.pizzaTotal   = latencyMetrics.pizzaCount   = 0;
 }
 
+// Grafana push
+
+function sendToGrafana(metrics) {
+  if (!metricsEnabled) return;   // no-op in test / unconfigured environments
+
+  const body = {
+    resourceMetrics: [{ scopeMetrics: [{ metrics }] }],
+  };
+
+  fetch(config.metrics.endpointUrl, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      Authorization: `Bearer ${config.metrics.accountId}:${config.metrics.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        console.error(`Metrics push failed: HTTP ${res.status}`);
+      }
+    })
+    .catch((err) => {
+      console.error('Error pushing metrics to Grafana:', err.message);
+    });
+}
+
