@@ -1,0 +1,42 @@
+const os = require('os');
+const config = require('./config.js');
+
+const metricsEnabled = !!(config.metrics && config.metrics.endpointUrl);
+
+// In-memory metric tracking
+
+// HTTP counters — reset each interval
+const httpMetrics = {
+  total: 0,
+  GET: 0,
+  POST: 0,
+  PUT: 0,
+  DELETE: 0,
+};
+
+// Latency accumulators — sum and count so we can report average; reset each interval
+const latencyMetrics = {
+  serviceTotal: 0,   // sum of all endpoint response times (ms)
+  serviceCount: 0,
+  pizzaTotal: 0,     // sum of factory response times (ms)
+  pizzaCount: 0,
+};
+
+// Auth counters — reset each interval
+const authMetrics = {
+  success: 0,
+  failure: 0,
+};
+
+// Active users — gauge, never reset
+let activeUsers = 0;
+
+// Pizza purchase counters — reset each interval
+const pizzaMetrics = {
+  sold: 0,
+  failures: 0,
+  revenue: 0,
+};
+
+// Public API used by routers
+
