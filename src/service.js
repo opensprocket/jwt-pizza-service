@@ -57,7 +57,6 @@ app.use((err, req, res, next) => {
   next();
 });
 
-module.exports = app;
 // Start pushing metrics to Grafana every 60 seconds.
 // Only start the loop when running as a real server, not during Jest test runs,
 // so tests don't leave open handles that prevent the process from exiting.
