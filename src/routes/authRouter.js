@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config.js');
 const { asyncHandler } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
+const metrics = require('../metrics.js');
 
 const authRouter = express.Router();
 
@@ -55,16 +56,19 @@ authRouter.authenticateToken = (req, res, next) => {
   next();
 };
 
-// register
+// register — treated as a login event: auth succeeded, user becomes active
 authRouter.post(
   '/',
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
+      metrics.authAttempt(false);
       return res.status(400).json({ message: 'name, email, and password are required' });
     }
     const user = await DB.addUser({ name, email, password, roles: [{ role: Role.Diner }] });
     const auth = await setAuth(user);
+    metrics.authAttempt(true);
+    metrics.userLogin();
     res.json({ user: user, token: auth });
   })
 );
@@ -74,9 +78,18 @@ authRouter.put(
   '/',
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const user = await DB.getUser(email, password);
-    const auth = await setAuth(user);
-    res.json({ user: user, token: auth });
+    try {
+      const user = await DB.getUser(email, password);
+      const auth = await setAuth(user);
+      metrics.authAttempt(true);
+      metrics.userLogin();
+      res.json({ user: user, token: auth });
+    } catch (err) {
+      // getUser throws when credentials are wrong — record the failure then re-throw
+      // so the default error handler still returns the appropriate status code.
+      metrics.authAttempt(false);
+      throw err;
+    }
   })
 );
 
@@ -86,6 +99,7 @@ authRouter.delete(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     await clearAuth(req);
+    metrics.userLogout();
     res.json({ message: 'logout successful' });
   })
 );
