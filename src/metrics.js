@@ -3,40 +3,38 @@ const config = require('./config.js');
 
 const metricsEnabled = !!(config.metrics && config.metrics.endpointUrl);
 
-// In-memory metric tracking
-
-// HTTP counters — reset each interval
+// HTTP counters — cumulative, never reset
 const httpMetrics = {
-  total: 0,
-  GET: 0,
-  POST: 0,
-  PUT: 0,
+  total:  0,
+  GET:    0,
+  POST:   0,
+  PUT:    0,
   DELETE: 0,
 };
 
-// Latency accumulators — sum and count so we can report average; reset each interval
-const latencyMetrics = {
-  serviceTotal: 0,   // sum of all endpoint response times (ms)
-  serviceCount: 0,
-  pizzaTotal: 0,     // sum of factory response times (ms)
-  pizzaCount: 0,
-};
-
-// Auth counters — reset each interval
+// Auth counters — cumulative, never reset
 const authMetrics = {
   success: 0,
   failure: 0,
 };
 
+// Pizza counters — cumulative, never reset
+const pizzaMetrics = {
+  sold:     0,
+  failures: 0,
+  revenue:  0,
+};
+
+
+const latencyMetrics = {
+  serviceTotal: 0,
+  serviceCount: 0,
+  pizzaTotal:   0,
+  pizzaCount:   0,
+};
+
 // Active users — gauge, never reset
 let activeUsers = 0;
-
-// Pizza purchase counters — reset each interval
-const pizzaMetrics = {
-  sold: 0,
-  failures: 0,
-  revenue: 0,
-};
 
 // Public API used by routers
 
@@ -147,6 +145,7 @@ function buildMetric(name, value, unit, metricType, valueType, attributes = {}) 
 }
 
 function collectMetrics() {
+  // Per-interval average latency for gauges — meaningful as a recent snapshot
   const avgServiceLatency =
     latencyMetrics.serviceCount > 0
       ? latencyMetrics.serviceTotal / latencyMetrics.serviceCount
@@ -158,40 +157,37 @@ function collectMetrics() {
       : 0;
 
   return [
-    // HTTP request counts
-    buildMetric('http_requests_total',  httpMetrics.total,  '1', 'sum', 'asInt'),
+    // HTTP request counts (sum/counter — cumulative, Prometheus appends _total)
+    // Total is derived in Grafana by summing method series; no separate total
+    // counter needed, which avoids the http_requests_total_total double-suffix bug.
     buildMetric('http_requests_get',    httpMetrics.GET,    '1', 'sum', 'asInt', { method: 'GET' }),
     buildMetric('http_requests_post',   httpMetrics.POST,   '1', 'sum', 'asInt', { method: 'POST' }),
     buildMetric('http_requests_put',    httpMetrics.PUT,    '1', 'sum', 'asInt', { method: 'PUT' }),
     buildMetric('http_requests_delete', httpMetrics.DELETE, '1', 'sum', 'asInt', { method: 'DELETE' }),
 
-    // Active users (gauge — point-in-time value)
+    // Active users (gauge — point-in-time, never reset)
     buildMetric('active_users', activeUsers, '1', 'gauge', 'asInt'),
 
-    // Auth attempts
-    buildMetric('auth_attempts_success', authMetrics.success, '1', 'sum', 'asInt', { result: 'success' }),
-    buildMetric('auth_attempts_failure', authMetrics.failure, '1', 'sum', 'asInt', { result: 'failure' }),
+    // Auth attempts (sum/counter — cumulative)
+    buildMetric('auth_success', authMetrics.success, '1', 'sum', 'asInt'),
+    buildMetric('auth_failure', authMetrics.failure, '1', 'sum', 'asInt'),
 
-    // System
+    // System (gauge — sampled fresh each interval)
     buildMetric('system_cpu_percent',    getCpuUsagePercentage(),    '%', 'gauge', 'asDouble'),
     buildMetric('system_memory_percent', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble'),
 
-    // Pizza purchases
-    buildMetric('pizza_sold',     pizzaMetrics.sold,     '1',  'sum', 'asInt'),
-    buildMetric('pizza_failures', pizzaMetrics.failures, '1',  'sum', 'asInt'),
-    buildMetric('pizza_revenue',  pizzaMetrics.revenue,  'USD','sum', 'asDouble'),
+    // Pizza purchases (sum/counter — cumulative)
+    buildMetric('pizza_sold',     pizzaMetrics.sold,     '1',   'sum', 'asInt'),
+    buildMetric('pizza_failures', pizzaMetrics.failures, '1',   'sum', 'asInt'),
+    buildMetric('pizza_revenue',  pizzaMetrics.revenue,  'BTC', 'sum', 'asDouble'),
 
-    // Latency (averages over the interval)
+    // Latency (gauge — per-interval average, reset after each send)
     buildMetric('latency_service_ms', avgServiceLatency, 'ms', 'gauge', 'asDouble'),
-    buildMetric('latency_pizza_ms',   avgPizzaLatency,   'ms', 'gauge', 'asDouble'),
+    buildMetric('latency_pizza_creation_ms',   avgPizzaLatency,   'ms', 'gauge', 'asDouble'),
   ];
 }
 
-// Reset per-interval counters after each send. Gauges (activeUsers, system) are not reset.
-function resetIntervalCounters() {
-  httpMetrics.total = httpMetrics.GET = httpMetrics.POST = httpMetrics.PUT = httpMetrics.DELETE = 0;
-  authMetrics.success = authMetrics.failure = 0;
-  pizzaMetrics.sold = pizzaMetrics.failures = pizzaMetrics.revenue = 0;
+function resetLatencyAccumulators() {
   latencyMetrics.serviceTotal = latencyMetrics.serviceCount = 0;
   latencyMetrics.pizzaTotal   = latencyMetrics.pizzaCount   = 0;
 }
@@ -199,7 +195,7 @@ function resetIntervalCounters() {
 // Grafana push
 
 function sendToGrafana(metrics) {
-  if (!metricsEnabled) return;   // no-op in test / unconfigured environments
+  if (!metricsEnabled) return;
 
   const body = {
     resourceMetrics: [{ scopeMetrics: [{ metrics }] }],
@@ -233,7 +229,7 @@ function sendMetricsPeriodically(intervalMs = 60_000) {
   setInterval(() => {
     try {
       sendToGrafana(collectMetrics());
-      resetIntervalCounters();
+      resetLatencyAccumulators(); // only reset latency, never counters
     } catch (err) {
       console.error('Unexpected error in metrics loop:', err.message);
     }
