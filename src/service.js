@@ -6,6 +6,7 @@ const userRouter = require('./routes/userRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
 const metrics = require('./metrics.js');
+const logger = require('./logger.js');
 
 const app = express();
 app.use(express.json());
@@ -13,6 +14,10 @@ app.use(express.json());
 // Metrics request tracker must come before all routers so every
 // inbound request is counted and timed — including auth and 404s.
 app.use(metrics.requestTracker);
+
+// HTTP logger middleware — must come after express.json() so req.body is
+// populated, but before routers so every request (including 404s) is logged.
+app.use(logger.httpLogger);
 
 app.use(setAuthUser);
 app.use((req, res, next) => {
@@ -50,6 +55,8 @@ app.use('*', (req, res) => {
     message: 'unknown endpoint',
   });
 });
+
+app.use(logger.exceptionLogger);
 
 // Default error handler for all exceptions and errors.
 app.use((err, req, res, next) => {
