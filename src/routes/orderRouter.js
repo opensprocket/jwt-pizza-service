@@ -4,6 +4,7 @@ const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
 const metrics = require('../metrics.js');
+const logger = require('../logger.js');
 
 const orderRouter = express.Router();
 
@@ -84,19 +85,33 @@ orderRouter.post(
     // Calculate the total order price so we can report revenue on success.
     const orderRevenue = (orderReq.items || []).reduce((sum, item) => sum + (item.price || 0), 0);
 
+    // Build the factory request payload (diner email is PII — logger.sanitize
+    // does not redact email by default, but strip it here intentionally).
+    const factoryPayload = {
+      diner: { id: req.user.id, name: req.user.name, email: req.user.email },
+      order,
+    };
+
+    // Log the outbound factory request (sanitized automatically by factoryLog)
+    logger.factoryLog('request', factoryPayload);
+
     const factoryStart = Date.now();
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
-      body: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
+      body: JSON.stringify(factoryPayload),
     });
     const factoryLatency = Date.now() - factoryStart;
 
     const j = await r.json();
+
+    logger.factoryLog('response', j);
+
     if (r.ok) {
       metrics.pizzaPurchase(true, factoryLatency, orderRevenue);
       res.send({ order, followLinkToEndChaos: j.reportUrl, jwt: j.jwt });
     } else {
+      logger.log('error', 'factory', 'Factory order fulfillment failed', { status: r.status, reportUrl: j.reportUrl });
       metrics.pizzaPurchase(false, factoryLatency, 0);
       res.status(500).send({ message: 'Failed to fulfill order at factory', followLinkToEndChaos: j.reportUrl });
     }
