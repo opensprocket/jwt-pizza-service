@@ -105,6 +105,7 @@ orderRouter.post(
 
     const j = await r.json();
 
+    // Log the factory response (jwt in response body is sanitized automatically)
     logger.factoryLog('response', j);
 
     if (r.ok) {
