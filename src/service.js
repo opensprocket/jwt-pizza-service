@@ -56,9 +56,23 @@ app.use('*', (req, res) => {
   });
 });
 
-app.use(logger.exceptionLogger);
+// Log all unhandled errors to Loki. For order failures, also increment
+// pizza_failures so the Grafana alert fires during chaos testing.
+app.use((err, req, res, next) => {
+  const isOrderRoute = req.path?.startsWith('/order') || req.originalUrl?.includes('/api/order');
+  if (isOrderRoute) {
+    metrics.pizzaPurchase(false, 0, 0);
+  }
+  logger.log('error', 'exception', err.message || 'Unhandled exception', {
+    name: err.name,
+    stack: err.stack,
+    path: req?.path,
+    method: req?.method,
+  });
+  next(err);
+});
 
-// Default error handler for all exceptions and errors.
+// Default error handler — sends the HTTP response.
 app.use((err, req, res, next) => {
   res.status(err.statusCode ?? 500).json({ message: err.message, stack: err.stack });
   next();
